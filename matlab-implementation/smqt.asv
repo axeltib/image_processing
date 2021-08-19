@@ -1,0 +1,21 @@
+function U = smqt(D, curLayer, totLayers)
+%Performing successive mean quantization on a single channeled image
+
+avgD = nanmean(D, [1,2]); 
+
+D0 = D;
+D1 = D;
+
+% Set filtered values tot nan to differentiate from 0
+D0(D0 > avgD) = nan; 
+D1(D1 <= avgD) = nan;
+
+U = not(isnan(D1)) * 2^(totLayers-curLayer);  % U will have the same "shape"
+                                              % as D1
+
+if curLayer == totLayers  % Bottom of the tree is hit
+   return; 
+end
+
+U = U + smqt(D0, curLayer+1, totLayers) + smqt(D1, curLayer+1, totLayers);
+end

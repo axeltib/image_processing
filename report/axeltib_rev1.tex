@@ -1,0 +1,134 @@
+\documentclass{IEEEtran}
+
+\usepackage{amsmath}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\title{Image enhancement for low light images}
+\author{Axel Tibbling}
+
+
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},
+}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In the begining was ther nothing, then came the big bang. This was widely regarded as a bad move.
+\end{abstract}
+
+\section{Introduction}
+
+This projects aims at studying the effects different image enhancing methods have on low light enviroment images, and to make a comparison between them, both in regards to metrics, as well as an subjective judgement. Furthermore will these a selction of these beceome implemented as an Android application, and compare to three different Android applications.
+
+\section{What is image processing and its purposes}
+
+\section{Digital images}
+
+Digital images are most commonly stored as a set of pixels, all having different values either rangeing from zero to one, or $0-255$ (in 8bit). Each pixel has a length of one unit, and the origin of the coordinate system is placed in the topmost left corner. RGB images are often three channeled, meaning that they have three values for each pixels, each corresponding to a colour (red, green or blue).
+
+\section{Image enhancement methods}
+
+\subsection{Succesive Mean Quantization Transform (SMQT)}
+
+This method is firstly presented by \cite{smqt_2008}. The aim of the it was to have an unbiased method capable of enhancing both digital images as well as
+
+The basic building block of the algorithm is the mean quantization unit (MQU), which calculates the mean value of the image (one channel), and divides all values based on whether they are larger or smaller than the mean, \cite{smqt_2008} denotes them $D_0$ and $D_1$ respectively. Additionally is a binary image $U$ created with ones where the corresponding values are larger than the mean.
+
+Returning to the SMQT, these two new one channel images are then passed on to one MQU each. The amount of times this is done is connected to the bit-level of the colours in the original image. For instance, 8-bit images should optimally have eight layers. The $U$ from each MQU in each layer is the summed together, with each layer having a weight equal to $2^{L-i}$, with $L$ being the total number of layers and $i$ being the layer of the current MQU. This is why the number of layers is connected to the bit level of the colours, as the weights are in powers of two.
+
+Because of the recursive nature of the algorithm, will the most appropriate way of implementing this be through a recursive function, calling the function again with $D_0$ and $D_1$ with a depth condition, most suitible $L-i = 0$, i.e. when $i = L$.
+\subsection{Histogram equalization}
+
+This is one of the most fundamental and first image enhancement method. It is based on that the values of each pixel form a probability distribution, from which a \emph{histogram} can be created were each image will have an unique histogram.
+
+To then increase the contrast of an image, effectively emphesizing all the colours in the image equally, the method equalizes the histogram, hence the name. In other words are all the pixel values equally common.
+
+The values of the pixels are changed depending on the cumulative sum of the frequency of that value.
+\subsection{V-transform}
+
+The V transform is specifically targeted towards the V channel of HSV transformed images. First is a vector of the V values of an image sorted, then divided into $N$ groups with equal sizes. These groups are then assigned beginning and end values, corresponding to the first and last value of the group respectively. The values in these groups are then replaced by that of a linear function going from the beginning and end values.
+\subsection{Reinhard method}
+
+Proposed in \cite{Reinhard} by Reinhard et al., this methods aims at transferring the colour information from one image to another through the means of statistics. First are the image converted to a perception-based color space $l\alpha\beta$, described in \cite{ruderman_98}. Then is the mean and standard variation of each channel of a \emph{target} image (whcih colour is to be attained and copyed over) calculated. The $source$ image's (the image to which the color information is transferred to) channels are then multiplied with a ratio of the target image's corresponding standard variation and that of the source image. Then is the image converted back to the RGB colour space.
+\subsection{Retinex methods}
+
+Originally coined by \cite{Land1971LightnessAR} \emph{retinex} is the theory of the colour vision in humnas. removal of illumination effects in images that are adverse. The foundation of the method is assuming that all images are composed by two parts, \emph{reflectance} and \emph{illuminance}, that are pixel-wise multiplicated with each other, which is, and states that an image is the multiplication of the \emph{reflectance} ($R$) and the \emph{illumination} ($L$) of a scene.That is, a given image can be described as $S = R \cdot L$, and logarithmically $\log{S}  = s = r + l$. Furthermore is it assumed that $0 \leq R \leq 1$, which results in $s \le r$, and that the illuminance is spatially piece-wise smooth.
+
+So to calculate the reflectance of an image is the illuminance of that image needed. There are a multitude of ways of approximating the illuminance, for instance the original approach with some extensions \cite{retinex_Parihar} or a more complex one \cite{retinex_by_two_elad_michael_2005} which is based on a optimization problem.
+
+\subsubsection{Single scale retinex}
+
+
+
+\subsubsection{Retinex by two bilateral filters}
+Proposed by \cite{retinex_by_two_elad_michael_2005}, this method aims at enhancing images taken in low light enviroments, and is a so called \emph{retinex} method.
+
+Mathematically is the problem presented as a quadratic programming problem, which minimizes the illumination with penalization terms that has two overarching terms. The formulation has its foundation in the $bilateral filter$ which aims at removing additive noise according to % FINISH SENTENCE
+
+ The first handles the smoothness of $l$ as well as its closeness to $s$. The second instead handles the smoothness of $r$ and constraints it to be close to the residual $s - l$.
+
+\begin{align}
+  \min_{r, l: l \geq s} & \left[ \lambda_l \norm{l-s}_2^2 + B_{W_l, P_l}\{l\} \right ] \\
+  & + \alpha \left [\lambda_r \norm{r-s+l}_2^2 + B_{W_r, P_r}\{r\} \right] \nonumber
+\end{align}
+
+where B is
+
+\begin{align}
+  B_{W, P}\{x\} = \sum_{m=-P}^{P}\sum_{n=-P}^{P}(C_{m,n}x-x)^T W_{[m,n]}(s) (C_{m,n}x-x)
+\end{align}
+
+with $C_{m,n}$ is the so called \emph{shift operator}, moving the operated image horizontally $m$ pixels and vertically $n$ pixels. $W_{[m,n]}$ are diagonal matrices with the purpose of not smoothing over edges in the image $s$. They are best chosen as being $|C_{m,n}s - s |$.
+
+Naturally is the problem then divided in to two: firstly is $l$ estimated, followed by the estimation of $r$ with now $l$ given.
+
+This algorithm could be applied in two ways. The first is to apply to the three colour channels induvidually, and recombining them to a RGB image. The other way is to only transform the \emph{value} channel in the HSV transformed image.
+
+\section{Android apps}
+
+\subsection{VSCO}
+\subsection{Snapseed}
+\emph{Snapseed} is an photoediting application developed by \emph{Google}, and last updated 12th of April, 2020 \cite{snapseed}. Both jpg and RAW image formats are supported, which is a positive aspect as some android phone cameras support RAW output format.
+
+
+\subsection{Lightroom}
+
+\section{Implementation in MATLAB - the code}
+
+\subsection{Main function}
+\lstinputlisting{../matlab-implementation/msr.m}
+
+\subsection{SMQT function}
+\subsection{SSR function}
+\subsection{MSR function}
+\subsection{MSRCR function}
+
+
+
+%%%% bibliography %%%%
+\bibliography{sources.bib}
+\bibliographystyle{IEEEtran.bst}
+
+\end{document}

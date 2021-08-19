@@ -1,0 +1,27 @@
+function R = msr(I)
+%MSR Multi scale retinex method
+
+R = zeros(size(I));
+switch nargin
+        case 1
+            sigmas = [1, 50, 100];
+            w = [1, 1, 1];
+
+I = double(I);
+% disp('<---- Start ssr ---->');
+
+for i = 1:size(I, 3)
+    spectral_band_i = I(:,:,i);
+    spectral_band_i(spectral_band_i == 0) = 0.01;
+    
+    Li = imgaussfilt(spectral_band_i, c);
+    Li(Li == 0) = 0.01;
+    
+    % Ri = ceil(exp(log(double(I(:,:,i))) - log(double(Li))));
+    Ri = exp(log(spectral_band_i) - log(Li));
+    R(:,:,i) = rescale(Ri, 0, 255);
+end
+ 
+R = uint8(R);
+end
+
